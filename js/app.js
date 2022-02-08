@@ -4,6 +4,7 @@ const menu = document.querySelector(".nav-menu");
 const listElements = menu.querySelectorAll("li");
 const chatList = document.querySelector(".chatlist");
 const userSection = document.querySelector(".user-section");
+const sendMessage = document.querySelector(".send-message");
 
 hamburger.addEventListener("click", () => {
   modal.style.display = "block";
@@ -208,7 +209,7 @@ let DATA = {
     {
       id: 8,
       first_name: "Husanboy",
-      last_name: "Erfashev",
+      last_name: "Ergashev",
       avatar: "../images/avatar8.jpg",
       bio: "Boksyor",
       user_name: "@Ergashev",
@@ -333,7 +334,9 @@ const createUser = (user) => {
   username.textContent = `${user.last_name} ${user.first_name}`;
   username.className = "username";
   let lastText = document.createElement("span");
-  lastText.textContent = `${user.messages[user.messages.length - 1].text}`;
+  lastText.textContent = `${
+    user.messages[user.messages.length - 1].text
+  }`;
   lastText.className = "last-text";
   avatarBox.appendChild(img);
   userCaption.appendChild(username);
@@ -345,9 +348,15 @@ const createUser = (user) => {
 };
 
 chatList.addEventListener("click", (event) => {
-  let target = event.target.parentElement.parentElement;
+  let target =
+    event.target.nodeName == "LI"
+      ? event.target
+      : event.target.parentElement.parentElement;
   const userLists = chatList.querySelectorAll("li");
-  if (target.nodeName !== "UL" && target.nodeName !== "DIV") {
+  if (
+    target.nodeName !== "UL" &&
+    target.nodeName !== "DIV"
+  ) {
     target.classList.add("active");
   }
   if (target.classList.contains("active")) {
@@ -358,48 +367,77 @@ chatList.addEventListener("click", (event) => {
       listElement.classList.remove("active");
     }
   });
+  event.stopPropagation();
 });
 
 const createUserInfo = (listElement) => {
-  let pointedUser = DATA.users.filter((user) => user.id == listElement.id);
-  console.log(pointedUser[0].messages);
-  let pointedUserSection = document.createElement("section");
-  pointedUserSection.className = "pointed-user";
-  let userDetails = document.createElement("div");
-  userDetails.className = "user-details";
-  let name = document.createElement("span");
-  name.className = "name";
-  name.textContent = `${pointedUser[0].first_name}`;
-  let activity = document.createElement("span");
-  activity.className = "last-seen";
-  activity.textContent = `${pointedUser[0].activity}`;
-  userDetails.append(name, activity);
-  let pointedUserIcons = document.createElement("div");
-  pointedUserIcons.className = "pointed-user-icons";
-  let firstIcon = document.createElement("img");
-  firstIcon.setAttribute("src", "../images/loupe.png");
-  firstIcon.setAttribute("alt", "search-icon");
-  let secondIcon = document.createElement("img");
-  secondIcon.setAttribute("src", "../images/phone-call.png");
-  secondIcon.setAttribute("alt", "call icon");
-  let thirdIcon = document.createElement("img");
-  thirdIcon.setAttribute("src", "../images/info.png");
-  thirdIcon.setAttribute("alt", "info icon");
-  let fourthIcon = document.createElement("img");
-  fourthIcon.setAttribute("src", "../images/more.png");
-  fourthIcon.setAttribute("alt", "three dots");
-  pointedUserIcons.append(firstIcon.secondIcon, thirdIcon, fourthIcon);
-  pointedUserSection.append(userDetails, pointedUserIcons);
-  let chatBar = document.createElement("section");
-  chatBar.className = "chat-bar";
-  let container = document.createElement("ul");
-  container.className = "container";
-  let ToMe = document.createElement("li");
-  ToMe.className = "to_me";
-  let text = document.createElement("p");
-  text.className = "text";
-  let to_me_text = pointedUser[0].messages.filter(
-    (message) => !message.is_from_me
+  let pointedUser = DATA.users.filter(
+    (user) => user.id == listElement.id
   );
-  console.log(to_me_text);
+  pointedUser = pointedUser[0];
+  createMessages(pointedUser);
+  let name = document.querySelector(".name");
+  name.textContent = `${pointedUser.first_name}`;
+  let activity = document.querySelector(".last-seen");
+  activity.textContent = `${pointedUser.activity}`;
+  sendMessage.setAttribute("id", listElement.id);
+  const messageInput = document.querySelector(
+    ".message-input"
+  );
+  messageInput.textContent = "";
+  userSection.style.display = "block";
 };
+function createMessages(user) {
+  let chatBar = document.querySelector(".chat-bar");
+  let container = document.querySelector(
+    ".chat-bar .container"
+  );
+  container.innerHTML = "";
+  for (let message of user.messages) {
+    if (message.is_from_me) {
+      let avatar = document.createElement("div");
+      avatar.className = "avatar_in_chat";
+      let image = document.createElement("img");
+      image.setAttribute("src", "../images/myAvatar.png");
+      image.setAttribute("alt", "Avatar");
+      avatar.append(image);
+      let fromMe = document.createElement("li");
+      fromMe.className = "from_me";
+      let text = document.createElement("p");
+      text.textContent = message.text;
+      text.className = "text";
+      fromMe.append(avatar, text);
+      container.appendChild(fromMe);
+    } else {
+      let avatar = document.createElement("div");
+      avatar.className = "avatar_in_chat";
+      let image = document.createElement("img");
+      image.setAttribute("src", user.avatar);
+      image.setAttribute("alt", "Avatar");
+      avatar.append(image);
+      let toMe = document.createElement("li");
+      toMe.className = "to_me";
+      let text = document.createElement("p");
+      text.textContent = message.text;
+      text.className = "text";
+      toMe.append(text, avatar);
+      container.appendChild(toMe);
+    }
+  }
+  chatBar.append(container);
+}
+//Adding messages
+sendMessage.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const id = event.target.getAttribute("id");
+  const user = DATA.users.filter((user) => user.id == id);
+  const message = {
+    id: user[0].messages.length + 1,
+    is_from_me: true,
+    text: event.target[0].value,
+    time: new Date().toLocaleTimeString(),
+  };
+  user[0].messages.push(message);
+  event.target[0].value = "";
+  createMessages(user[0]);
+});

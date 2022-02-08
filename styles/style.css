@@ -213,7 +213,7 @@ ul.container {
   flex-wrap: wrap-reverse;
 }
 .from_me .text {
-  background-color: #ccc;
+  background-color: #4d8edf;
   border-bottom-left-radius: 0 !important;
 }
 .to_me {
@@ -222,7 +222,7 @@ ul.container {
   flex-wrap: wrap-reverse;
 }
 .to_me .text {
-  background-color: #4d8edf;
+  background-color: #ccc;
   border-bottom-right-radius: 0 !important;
 }
 .chat-bar li .text {
@@ -267,4 +267,7 @@ ul.container {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+}
+.last-text {
+  overflow: hidden;
 }
